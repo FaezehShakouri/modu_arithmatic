@@ -18,20 +18,19 @@ impl BigNumber {
     }
 
     /// Limb-wise integer addition (no modular reduction).
-    pub fn add(&self, other: &Self) -> Self {
-        let mut result = Self::new([0; 4]);
+    pub fn add(&self, other: &Self) -> (BigNumber, u64) {
+        let mut result: BigNumber = Self::new([0; 4]);
         let mut carry: u64 = 0;
 
         for i in 0..4 {
-            let sum_with_carry = self.limbs[i] as u128
-                + other.limbs[i] as u128
-                + carry as u128;
+            let (sum0, overflow0) = self.limbs[i].overflowing_add(other.limbs[i]);
+            let (sum1, overflow1) = sum0.overflowing_add(carry);
 
-            result.limbs[i] = sum_with_carry as u64;
-            carry = (sum_with_carry >> 64) as u64;
+            result.limbs[i] = sum1;
+            carry = if overflow0 || overflow1 { 1 } else { 0 };
         }
 
-        result
+        (result, carry)
     }
 
     pub fn to_ark_bigint(&self) -> BigInt<4> {
@@ -60,7 +59,7 @@ mod tests {
         let prime = BigNumber::PRIME;
         let one = BigNumber::new([1, 0, 0, 0]);
 
-        let ours = prime.add(&one);
+        let (ours, _) = prime.add(&one);
         let ark = prime.ark_bigint_add(&one);
 
         assert_eq!(ours, ark, "limb add should match ark-ff BigInt::add_with_carry");
@@ -71,10 +70,11 @@ mod tests {
         let max_limb = BigNumber::new([u64::MAX, 0, 0, 0]);
         let one = BigNumber::new([1, 0, 0, 0]);
 
-        let ours = max_limb.add(&one);
+        let (ours, carry) = max_limb.add(&one);
         let ark = max_limb.ark_bigint_add(&one);
-
+        
         assert_eq!(ours.limbs, [0, 1, 0, 0]);
+        assert_eq!(carry, 0);
         assert_eq!(ours, ark);
     }
 
