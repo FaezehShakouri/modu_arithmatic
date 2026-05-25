@@ -13,6 +13,13 @@ impl BigNumber {
         0x30644e72e131a029,
     ]);
 
+    pub const TWO_256_MOD_PRIME: Self = Self::new([
+        0xac96341c4ffffffb,
+        0x36fc76959f60cd29,
+        0x666ea36f7879462e,
+        0x0e0a77c19a07df2f,
+    ]);
+
     pub const fn new(limbs: [u64; 4]) -> Self {
         Self { limbs }
     }
@@ -33,16 +40,28 @@ impl BigNumber {
         (result, carry)
     }
 
-    /// `(a + b) mod p` for values already reduced below `p`.
     pub fn add_mod(&self, other: &Self) -> Self {
-        let (mut sum, _) = self.raw_add(other);
+        let (sum, _) = self.raw_add(other);
+        // carry is always zero because inputs < p
 
         if sum.gte(&Self::PRIME) {
             let (reduced, _) = sum.raw_sub(&Self::PRIME);
-            sum = reduced;
+            return reduced;
         }
-
         sum
+        
+        // if carry == 1 {
+        //     // If carry = 1, then result = reduced_low + carry = low + TWO_256_MOD_PRIME
+        //     let (mut result, _) = low.raw_add(&Self::TWO_256_MOD_PRIME);
+
+        //     if result.gte(&Self::PRIME) {
+        //         // If result >= PRIME -> reduction
+        //         (result, _) = result.raw_sub(&Self::PRIME);
+        //     }
+        //     result
+        // } else {
+        //     low
+        // }
     }
 
     pub fn raw_sub(&self, other: &Self) -> (Self, u64) {
