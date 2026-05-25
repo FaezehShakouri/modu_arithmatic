@@ -1,13 +1,11 @@
 use modular_arithmatic::BigNumber;
 
 fn main() {
-    let prime = BigNumber::PRIME;
-    let one = BigNumber::new([1, 0, 0, 0]);
+    let a = BigNumber::new([42, 0, 0, 0]);
+    let b = BigNumber::new([100, 0, 0, 0]);
 
-    let (ours, carry) = prime.add(&one);
-    let ark = prime.ark_bigint_add(&one);
-
-    println!("our add:  {:?}", ours);
-    println!("carry: {}", carry);
-    println!("ark bigint add: {:?}", ark);
+    println!("raw_add: {:?}", a.raw_add(&b));
+    println!("add_mod: {:?}", a.add_mod(&b));
+    println!("raw_sub: {:?}", a.raw_sub(&b));
+    println!("mod_sub: {:?}", a.mod_sub(&b));
 }
