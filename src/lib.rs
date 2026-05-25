@@ -13,13 +13,6 @@ impl BigNumber {
         0x30644e72e131a029,
     ]);
 
-    pub const TWO_256_MOD_PRIME: Self = Self::new([
-        0xac96341c4ffffffb,
-        0x36fc76959f60cd29,
-        0x666ea36f7879462e,
-        0x0e0a77c19a07df2f,
-    ]);
-
     pub const fn new(limbs: [u64; 4]) -> Self {
         Self { limbs }
     }
